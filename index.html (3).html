@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HistoriaEcon Quest 🏛️</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0c;
+    --surface: #1a1916;
+    --surface2: #242220;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: #6b5a2a;
+    --text: #f0ead8;
+    --text-muted: #8a826e;
+    --green: #4a9b6f;
+    --green-bg: #0d2618;
+    --red: #c94c4c;
+    --red-bg: #260d0d;
+    --border: rgba(201,168,76,0.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(ellipse at 20% 10%, rgba(201,168,76,0.06) 0%, transparent 50%),
+                      radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #app { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.5px;
+  }
+  .header p { color: var(--text-muted); font-size: 0.95rem; letter-spacing: 0.02em; }
+
+  /* Nav */
+  nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px; }
+  .nav-btn {
+    flex: 1; min-width: 90px; padding: 9px 12px; border-radius: 10px; border: none;
+    background: transparent; color: var(--text-muted); font-size: 13px; font-family: 'DM Sans', sans-serif;
+    font-weight: 400; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-align: center;
+  }
+  .nav-btn:hover { color: var(--text); background: var(--surface2); }
+  .nav-btn.active { background: var(--gold); color: #0f0e0c; font-weight: 500; }
+
+  /* Sections */
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Cards */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem; margin-bottom: 1.2rem;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 600;
+    color: var(--gold-light); margin-bottom: 0.75rem;
+  }
+  .card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.75; }
+  .card p + p { margin-top: 0.75rem; }
+  .card strong { color: var(--text); font-weight: 500; }
+
+  /* Concept box */
+  .concept {
+    background: var(--surface2); border-left: 3px solid var(--gold-dim);
+    border-radius: 0 10px 10px 0; padding: 1rem 1.25rem; margin: 1rem 0;
+  }
+  .concept-title { font-size: 0.82rem; letter-spacing: 0.08em; color: var(--gold); text-transform: uppercase; margin-bottom: 0.4rem; font-weight: 500; }
+  .concept p { font-size: 0.9rem; }
+
+  /* Tag */
+  .tag {
+    display: inline-block; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; background: rgba(201,168,76,0.12);
+    color: var(--gold); border: 1px solid rgba(201,168,76,0.25); margin-bottom: 0.75rem; font-weight: 500;
+  }
+
+  /* Home grid */
+  .topics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.2rem; }
+  .topic-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1.1rem 1.2rem; cursor: pointer; transition: all 0.2s;
+  }
+  .topic-card:hover { border-color: var(--gold-dim); background: var(--surface2); transform: translateY(-2px); }
+  .topic-card .num { font-size: 0.75rem; color: var(--gold); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .topic-card .name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--text); line-height: 1.4; }
+  .topic-card .sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+  .problems-cta {
+    background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.06));
+    border: 1px solid rgba(201,168,76,0.3); border-radius: 14px;
+    padding: 1.2rem 1.5rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between;
+  }
+  .problems-cta:hover { border-color: var(--gold); }
+  .problems-cta .label { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--gold-light); }
+  .problems-cta .sub { font-size: 0.82rem; color: var(--text-muted); margin-top: 3px; }
+  .problems-cta .arrow { color: var(--gold); font-size: 1.4rem; }
+
+  /* Next btn */
+  .next-btn {
+    margin-top: 1.25rem; padding: 10px 22px; border-radius: 10px;
+    border: 1px solid var(--gold-dim); background: transparent; color: var(--gold);
+    font-size: 0.9rem; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+  }
+  .next-btn:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+
+  /* Stats */
+  .stats { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+  .stat { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem; text-align: center; }
+  .stat-num { font-size: 1.6rem; font-weight: 500; font-family: 'Playfair Display', serif; }
+  .stat-num.green { color: var(--green); }
+  .stat-num.red { color: var(--red); }
+  .stat-num.gold { color: var(--gold); }
+  .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.04em; }
+
+  /* Problem */
+  .problem-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.2rem; }
+  .problem-num { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .problem-text { font-size: 1rem; color: var(--text); line-height: 1.75; margin-bottom: 1.1rem; }
+  .problem-text strong { color: var(--gold-light); font-weight: 500; }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .opt-btn {
+    padding: 11px 16px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text); font-size: 0.92rem;
+    font-family: 'DM Sans', sans-serif; cursor: pointer; text-align: left; transition: all 0.18s;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--gold-dim); color: var(--gold-light); background: rgba(201,168,76,0.06); }
+  .opt-btn:disabled { cursor: default; }
+  .opt-btn.correct { background: var(--green-bg); border-color: var(--green); color: #7dcea0; }
+  .opt-btn.wrong { background: var(--red-bg); border-color: var(--red); color: #e08080; }
+
+  /* Feedback */
+  .feedback { display: none; margin-top: 0.9rem; padding: 0.9rem 1rem; border-radius: 10px; font-size: 0.9rem; line-height: 1.6; }
+  .feedback.show { display: block; }
+  .feedback.ok { background: var(--green-bg); border: 1px solid var(--green); color: #7dcea0; }
+  .feedback.fail { background: var(--red-bg); border: 1px solid var(--red); color: #e08080; }
+
+  /* Hint */
+  .hint-toggle { font-size: 0.82rem; color: var(--text-muted); cursor: pointer; margin-top: 0.7rem; display: inline-block; border-bottom: 1px dashed var(--text-muted); }
+  .hint-toggle:hover { color: var(--gold); border-color: var(--gold); }
+  .hint-text { display: none; margin-top: 0.6rem; padding: 0.7rem 1rem; background: var(--surface2); border-radius: 8px; font-size: 0.86rem; color: var(--text-muted); border-left: 2px solid var(--gold-dim); }
+  .hint-text.show { display: block; }
+
+  /* Progress */
+  .progress-bar-wrap { height: 4px; background: var(--surface2); border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.4s; }
+
+  /* Final score */
+  .score-card { text-align: center; padding: 2.5rem; }
+  .score-big { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700; color: var(--gold-light); }
+  .score-sub { font-size: 0.95rem; color: var(--text-muted); margin-top: 0.4rem; }
+  .restart-btn {
+    margin-top: 1.5rem; padding: 12px 30px; border-radius: 12px;
+    background: var(--gold); border: none; color: #0f0e0c;
+    font-size: 0.95rem; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+  }
+  .restart-btn:hover { opacity: 0.85; }
+
+  @media (max-width: 520px) {
+    .topics-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.9rem; }
+    nav { gap: 4px; }
+    .nav-btn { font-size: 12px; padding: 8px 8px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="header">
+    <h1>HistoriaEcon Quest 🏛️</h1>
+    <p>Aprende historia económica — con lecciones claras y problemas prácticos</p>
+  </div>
+
+  <nav>
+    <button class="nav-btn active" onclick="showSection('home')">🏠 Inicio</button>
+    <button class="nav-btn" onclick="showSection('l1')">📜 Tema 1</button>
+    <button class="nav-btn" onclick="showSection('l2')">⚔️ Tema 2</button>
+    <button class="nav-btn" onclick="showSection('l3')">💰 Tema 3</button>
+    <button class="nav-btn" onclick="showSection('l4')">🏪 Tema 4</button>
+    <button class="nav-btn" onclick="showSection('problems')">🧩 Problemas</button>
+  </nav>
+
+  <!-- HOME -->
+  <div id="home" class="section active">
+    <div class="topics-grid">
+      <div class="topic-card" onclick="showSection('l1')">
+        <div class="num">Tema 1</div>
+        <div class="name">El colapso del mundo antiguo</div>
+        <div class="sub">Los nuevos imperios europeos</div>
+      </div>
+      <div class="topic-card" onclick="showSection('l2')">
+        <div class="num">Tema 2</div>
+        <div class="name">La edad media europea</div>
+        <div class="sub">Y el Islam</div>
+      </div>
+      <div class="topic-card" onclick="showSection('l3')">
+        <div class="num">Tema 3</div>
+        <div class="name">Los agentes económicos</div>
+        <div class="sub">Y el mercado</div>
+      </div>
+      <div class="topic-card" onclick="showSection('l4')">
+        <div class="num">Tema 4</div>
+        <div class="name">Mercado, producción</div>
+        <div class="sub">Y consumo</div>
+      </div>
+    </div>
+    <div class="problems-cta" onclick="showSection('problems')">
+      <div>
+        <div class="label">Problemas prácticos</div>
+        <div class="sub">8 preguntas con pistas y corrección automática</div>
+      </div>
+      <div class="arrow">→</div>
+    </div>
+  </div>
+
+  <!-- TEMA 1 -->
+  <div id="l1" class="section">
+    <div class="card">
+      <div class="tag">Tema 1</div>
+      <div class="card-title">El colapso del mundo antiguo y los nuevos imperios europeos</div>
+      <p>El <strong>Imperio Romano</strong> dominó gran parte del mundo conocido durante siglos. Sin embargo, a partir del siglo III d.C. comenzó un lento proceso de desintegración causado por invasiones bárbaras, crisis económica, corrupción y debilidad militar.</p>
+      <div class="concept">
+        <div class="concept-title">Caída de Roma — 476 d.C.</div>
+        <p>La caída del Imperio Romano de Occidente marcó el fin del mundo antiguo. Los pueblos germánicos (visigodos, ostrogodos, francos) tomaron los territorios romanos y fundaron nuevos reinos. El emperador Rómulo Augústulo fue depuesto por Odoacro.</p>
+      </div>
+      <p>Sobre las ruinas de Roma surgieron los <strong>nuevos imperios europeos</strong>. El Imperio Carolingio de Carlomagno (siglos VIII-IX) fue el más significativo, intentando reunificar Europa bajo un solo poder político y religioso.</p>
+      <div class="concept">
+        <div class="concept-title">Imperio Carolingio</div>
+        <p>Carlomagno fue coronado emperador por el Papa León III en el año 800 d.C. Su reino abarcó lo que hoy es Francia, Alemania e Italia del norte. Promovió la educación y la escritura en el llamado "Renacimiento Carolingio".</p>
+      </div>
+      <p>Paralelamente, el <strong>Imperio Bizantino</strong> (Roma del Este) sobrevivió hasta 1453, preservando la cultura grecorromana en Oriente. Constantinopla fue su gran capital comercial y cultural.</p>
+      <div class="concept">
+        <div class="concept-title">Consecuencias económicas</div>
+        <p>El colapso romano destruyó las redes de comercio mediterráneo. Las ciudades se vaciaron, volvió la economía rural de subsistencia y el trueque reemplazó al dinero en muchas regiones. El comercio a larga distancia casi desapareció en Europa occidental.</p>
+      </div>
+      <button class="next-btn" onclick="showSection('l2')">Siguiente: Edad Media y el Islam →</button>
+    </div>
+  </div>
+
+  <!-- TEMA 2 -->
+  <div id="l2" class="section">
+    <div class="card">
+      <div class="tag">Tema 2</div>
+      <div class="card-title">La edad media europea y el Islam</div>
+      <p>La <strong>Edad Media</strong> abarca del siglo V al XV. Europa se reorganizó bajo el <strong>sistema feudal</strong>: el rey otorgaba tierras a los señores feudales, quienes protegían a los campesinos llamados siervos. La tierra era la principal fuente de riqueza.</p>
+      <div class="concept">
+        <div class="concept-title">El feudalismo</div>
+        <p>Jerarquía: Rey → Señores feudales → Caballeros → Siervos. Los siervos trabajaban la tierra y entregaban parte de su producción al señor. A cambio recibían protección militar. Era un sistema cerrado con poca movilidad social.</p>
+      </div>
+      <p>Mientras Europa se fragmentaba, en el siglo VII surgió el <strong>Islam</strong> en Arabia, fundado por el profeta Mahoma. En pocas décadas se extendió por Oriente Medio, norte de África y la península ibérica, creando un vasto espacio de intercambio cultural y comercial.</p>
+      <div class="concept">
+        <div class="concept-title">El Islam y el comercio</div>
+        <p>Los musulmanes preservaron y tradujeron textos griegos y romanos. Desarrollaron el comercio con India, China y África. Introdujeron en Europa productos como el papel, el álgebra, las cifras arábigas y nuevos cultivos agrícolas.</p>
+      </div>
+      <p>Las <strong>Cruzadas</strong> (1095-1291) fueron expediciones militares europeas hacia Oriente. Aunque fracasaron militarmente, reactivaron el comercio entre Europa y el Mediterráneo oriental, abriendo rutas que enriquecieron a ciudades como Venecia y Génova.</p>
+      <div class="concept">
+        <div class="concept-title">Las ciudades medievales</div>
+        <p>A partir del siglo XI las ciudades crecieron. Surgieron los gremios artesanales y los mercaderes ganaron poder. Las ferias comerciales (como las de Champaña, Francia) conectaban a comerciantes de toda Europa.</p>
+      </div>
+      <button class="next-btn" onclick="showSection('l3')">Siguiente: Agentes económicos →</button>
+    </div>
+  </div>
+
+  <!-- TEMA 3 -->
+  <div id="l3" class="section">
+    <div class="card">
+      <div class="tag">Tema 3</div>
+      <div class="card-title">Los agentes económicos y el mercado</div>
+      <p>Los <strong>agentes económicos</strong> son los actores que participan en la actividad económica tomando decisiones sobre producción, consumo e intercambio. Se clasifican en tres grandes grupos.</p>
+      <div class="concept">
+        <div class="concept-title">Las familias (hogares)</div>
+        <p>Son los principales consumidores. Ofrecen factores de producción (trabajo, capital) a las empresas a cambio de ingresos (salarios, rentas). Con esos ingresos compran bienes y servicios para satisfacer sus necesidades.</p>
+      </div>
+      <div class="concept">
+        <div class="concept-title">Las empresas</div>
+        <p>Son las unidades de producción. Combinan los factores productivos (tierra, trabajo, capital) para crear bienes y servicios. Su objetivo principal es maximizar la ganancia. Pueden ser privadas, públicas o mixtas.</p>
+      </div>
+      <div class="concept">
+        <div class="concept-title">El Estado</div>
+        <p>Regula la economía, provee bienes públicos (educación, salud, seguridad) y redistribuye el ingreso mediante impuestos y gasto público. También puede actuar como productor a través de empresas estatales.</p>
+      </div>
+      <p>El <strong>mercado</strong> es el espacio (físico o virtual) donde se encuentran compradores y vendedores para intercambiar bienes o servicios. El precio es la señal que coordina las decisiones de todos los agentes.</p>
+      <div class="concept">
+        <div class="concept-title">Tipos de mercado</div>
+        <p>Según el bien transado: mercado de bienes, mercado laboral, mercado financiero. Según la competencia: competencia perfecta (muchos compradores y vendedores), monopolio (un solo vendedor), oligopolio (pocos vendedores).</p>
+      </div>
+      <button class="next-btn" onclick="showSection('l4')">Siguiente: Mercado, producción y consumo →</button>
+    </div>
+  </div>
+
+  <!-- TEMA 4 -->
+  <div id="l4" class="section">
+    <div class="card">
+      <div class="tag">Tema 4</div>
+      <div class="card-title">Mercado, producción y consumo</div>
+      <p>La economía gira en torno a tres actividades fundamentales que se interrelacionan constantemente: <strong>producción</strong>, <strong>distribución</strong> y <strong>consumo</strong>.</p>
+      <div class="concept">
+        <div class="concept-title">La producción</div>
+        <p>Es el proceso de transformar insumos (materias primas, trabajo, capital) en bienes o servicios. Los factores de producción son: tierra (recursos naturales), trabajo (esfuerzo humano) y capital (maquinaria, tecnología). La productividad mide cuánto se produce por unidad de factor.</p>
+      </div>
+      <div class="concept">
+        <div class="concept-title">La oferta y la demanda</div>
+        <p>La <strong>demanda</strong> es la cantidad que los consumidores están dispuestos a comprar a cada precio. La <strong>oferta</strong> es la cantidad que los productores están dispuestos a vender. Cuando la oferta y la demanda se igualan, se alcanza el <strong>precio de equilibrio</strong>.</p>
+      </div>
+      <p>El <strong>consumo</strong> es el uso de bienes y servicios para satisfacer necesidades. Las necesidades pueden ser básicas (alimento, vivienda) o secundarias (entretenimiento, lujo). La <strong>utilidad</strong> mide la satisfacción que un bien brinda al consumidor.</p>
+      <div class="concept">
+        <div class="concept-title">El flujo circular de la economía</div>
+        <p>Las familias ofrecen trabajo → las empresas pagan salarios → las familias gastan en bienes → las empresas reciben ingresos → ciclo continuo. El Estado interrumpe este flujo con impuestos y lo estimula con gasto público e inversión.</p>
+      </div>
+      <div class="concept">
+        <div class="concept-title">Mercado medieval vs. moderno</div>
+        <p>En la Edad Media los mercados eran locales, con precios fijados por la costumbre y controlados por los gremios. El capitalismo comercial (siglos XV-XVII) creó mercados más amplios, con precios determinados por la competencia y el intercambio internacional.</p>
+      </div>
+      <button class="next-btn" onclick="showSection('problems')">¡Ir a los Problemas! 🧩</button>
+    </div>
+  </div>
+
+  <!-- PROBLEMS -->
+  <div id="problems" class="section">
+    <div class="stats">
+      <div class="stat"><div class="stat-num green" id="correct-count">0</div><div class="stat-label">Correctas</div></div>
+      <div class="stat"><div class="stat-num red" id="wrong-count">0</div><div class="stat-label">Incorrectas</div></div>
+      <div class="stat"><div class="stat-num gold" id="tried-count">0</div><div class="stat-label">Intentadas</div></div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+    <div id="problems-container"></div>
+    <div id="final-score" style="display:none">
+      <div class="card score-card">
+        <div class="score-big" id="score-text"></div>
+        <div class="score-sub" id="score-msg"></div>
+        <button class="restart-btn" onclick="restartQuiz()">Intentar de nuevo</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const problems = [
+  {
+    topic: "Tema 1",
+    text: "¿En qué año cayó el Imperio Romano de Occidente, marcando el fin del mundo antiguo?",
+    options: ["376 d.C.", "476 d.C.", "576 d.C.", "800 d.C."],
+    correct: 1,
+    hint: "Ocurrió en el siglo V d.C. cuando Odoacro depuso al último emperador romano.",
+    ok: "¡Correcto! En el 476 d.C. Odoacro depuso a Rómulo Augústulo, marcando el fin del Imperio Romano de Occidente.",
+    fail: "La respuesta correcta es 476 d.C. Ese año Odoacro depuso al último emperador romano de Occidente."
+  },
+  {
+    topic: "Tema 1",
+    text: "¿Qué hecho ocurrió en el año 800 d.C. y fue clave para la formación de los nuevos imperios europeos?",
+    options: [
+      "La caída de Constantinopla",
+      "El inicio de las Cruzadas",
+      "La coronación de Carlomagno como emperador por el Papa León III",
+      "La conversión de los francos al Islam"
+    ],
+    correct: 2,
+    hint: "Carlomagno intentó reunificar Europa bajo un solo poder político y religioso.",
+    ok: "¡Exacto! En el 800 d.C. el Papa León III coronó a Carlomagno como emperador, dando inicio al Imperio Carolingio.",
+    fail: "La respuesta es la coronación de Carlomagno. En el 800 d.C. el Papa León III lo coronó como emperador del Imperio Carolingio."
+  },
+  {
+    topic: "Tema 2",
+    text: "¿Cuál era la jerarquía correcta del sistema feudal medieval?",
+    options: [
+      "Siervos → Caballeros → Rey → Señores feudales",
+      "Rey → Señores feudales → Caballeros → Siervos",
+      "Señores feudales → Rey → Siervos → Caballeros",
+      "Rey → Siervos → Caballeros → Señores feudales"
+    ],
+    correct: 1,
+    hint: "El rey estaba en la cima. Los siervos trabajaban la tierra y estaban en la base de la pirámide.",
+    ok: "¡Muy bien! La jerarquía feudal iba de arriba abajo: Rey → Señores feudales → Caballeros → Siervos.",
+    fail: "La jerarquía correcta es: Rey → Señores feudales → Caballeros → Siervos. Los siervos trabajaban la tierra."
+  },
+  {
+    topic: "Tema 2",
+    text: "¿Cuál fue un aporte clave del Islam a Europa durante la Edad Media?",
+    options: [
+      "La invención del feudalismo",
+      "La depuración del Imperio Romano",
+      "La preservación de textos griegos y la introducción del álgebra y las cifras arábigas",
+      "La construcción de castillos medievales"
+    ],
+    correct: 2,
+    hint: "Los musulmanes fueron grandes traductores y científicos que conectaron Europa con el conocimiento antiguo.",
+    ok: "¡Correcto! El Islam preservó y transmitió el conocimiento griego, e introdujo el álgebra, las cifras arábigas y nuevos cultivos en Europa.",
+    fail: "El Islam aportó la preservación de textos griegos, el álgebra, las cifras arábigas y nuevos productos agrícolas a Europa."
+  },
+  {
+    topic: "Tema 3",
+    text: "¿Cuáles son los tres principales agentes económicos?",
+    options: [
+      "Bancos, empresas y sindicatos",
+      "Familias, empresas y Estado",
+      "Productores, intermediarios y consumidores",
+      "Gobierno, mercado y sociedad civil"
+    ],
+    correct: 1,
+    hint: "Son los tres actores que participan en toda economía: los que consumen, los que producen y el que regula.",
+    ok: "¡Perfecto! Los tres agentes económicos principales son las familias (consumidores), las empresas (productoras) y el Estado (regulador).",
+    fail: "Los tres agentes económicos son: familias (consumen), empresas (producen) y Estado (regula y provee bienes públicos)."
+  },
+  {
+    topic: "Tema 3",
+    text: "Un mercado donde existe un solo vendedor y muchos compradores se llama:",
+    options: ["Competencia perfecta", "Oligopolio", "Monopolio", "Monopsonio"],
+    correct: 2,
+    hint: "El prefijo 'mono' significa uno. Este tipo de mercado tiene un único proveedor que controla el precio.",
+    ok: "¡Exacto! El monopolio es cuando un solo vendedor controla toda la oferta del mercado, pudiendo fijar precios.",
+    fail: "Se llama monopolio. Es cuando existe un único vendedor en el mercado, sin competencia directa."
+  },
+  {
+    topic: "Tema 4",
+    text: "¿Qué ocurre cuando la oferta y la demanda se igualan en un mercado?",
+    options: [
+      "El Estado interviene para fijar el precio",
+      "Se alcanza el precio de equilibrio",
+      "Los productores abandonan el mercado",
+      "Se produce una crisis económica"
+    ],
+    correct: 1,
+    hint: "Es el punto donde la cantidad que los compradores desean comprar coincide exactamente con lo que los vendedores quieren vender.",
+    ok: "¡Muy bien! Cuando oferta y demanda se igualan se alcanza el precio de equilibrio, que coordina a compradores y vendedores.",
+    fail: "Se alcanza el precio de equilibrio: el punto donde la cantidad ofrecida coincide con la cantidad demandada."
+  },
+  {
+    topic: "Tema 4",
+    text: "En el flujo circular de la economía, ¿qué ofrecen las familias a las empresas?",
+    options: [
+      "Bienes y servicios terminados",
+      "Impuestos y subsidios",
+      "Factores de producción como trabajo y capital",
+      "Regulaciones y leyes económicas"
+    ],
+    correct: 2,
+    hint: "Las familias son dueñas de los recursos productivos: su tiempo, esfuerzo y ahorros.",
+    ok: "¡Correcto! Las familias ofrecen factores de producción (trabajo, capital) a las empresas, y reciben salarios y rentas a cambio.",
+    fail: "Las familias ofrecen factores de producción: principalmente trabajo (su tiempo y esfuerzo) y capital (ahorros e inversiones)."
+  }
+];
+
+let correctCount = 0;
+let wrongCount = 0;
+let answeredCount = 0;
+const totalProblems = problems.length;
+const answered = new Array(totalProblems).fill(false);
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx = ['home','l1','l2','l3','l4','problems'].indexOf(id);
+  if (idx >= 0) document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+  if (id === 'problems') renderProblems();
+}
+
+function renderProblems() {
+  const container = document.getElementById('problems-container');
+  if (container.children.length > 0) return;
+  container.innerHTML = '';
+  problems.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'problem-card';
+    div.id = 'prob-' + i;
+    div.innerHTML = `
+      <div class="problem-num">${p.topic} — Problema ${i+1} de ${totalProblems}</div>
+      <div class="problem-text">${p.text}</div>
+      <div class="options" id="opts-${i}">
+        ${p.options.map((opt, j) => `<button class="opt-btn" onclick="checkAnswer(${i},${j})">${opt}</button>`).join('')}
+      </div>
+      <div class="hint-toggle" onclick="toggleHint(${i})">💡 Pista</div>
+      <div class="hint-text" id="hint-${i}">${p.hint}</div>
+      <div class="feedback" id="fb-${i}"></div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function checkAnswer(probIdx, optIdx) {
+  if (answered[probIdx]) return;
+  answered[probIdx] = true;
+  answeredCount++;
+  const p = problems[probIdx];
+  const opts = document.querySelectorAll(`#opts-${probIdx} .opt-btn`);
+  opts.forEach(b => b.disabled = true);
+  const fb = document.getElementById('fb-' + probIdx);
+  if (optIdx === p.correct) {
+    correctCount++;
+    opts[optIdx].classList.add('correct');
+    fb.textContent = '✔ ' + p.ok;
+    fb.className = 'feedback show ok';
+  } else {
+    wrongCount++;
+    opts[optIdx].classList.add('wrong');
+    opts[p.correct].classList.add('correct');
+    fb.textContent = '✘ ' + p.fail;
+    fb.className = 'feedback show fail';
+  }
+  document.getElementById('correct-count').textContent = correctCount;
+  document.getElementById('wrong-count').textContent = wrongCount;
+  document.getElementById('tried-count').textContent = answeredCount;
+  document.getElementById('progress-bar').style.width = Math.round((answeredCount / totalProblems) * 100) + '%';
+  if (answeredCount === totalProblems) {
+    setTimeout(showFinalScore, 800);
+  }
+}
+
+function toggleHint(i) {
+  const h = document.getElementById('hint-' + i);
+  h.classList.toggle('show');
+}
+
+function showFinalScore() {
+  document.getElementById('problems-container').style.display = 'none';
+  const final = document.getElementById('final-score');
+  final.style.display = 'block';
+  const pct = Math.round((correctCount / totalProblems) * 100);
+  document.getElementById('score-text').textContent = correctCount + ' / ' + totalProblems;
+  let msg = '';
+  if (pct >= 90) msg = '¡Excelente! Dominas los temas perfectamente. 🏆';
+  else if (pct >= 70) msg = '¡Muy bien! Tienes un buen manejo del contenido. 👍';
+  else if (pct >= 50) msg = 'Buen intento. Repasa las lecciones y vuelve a intentarlo. 📚';
+  else msg = 'Te recomendamos repasar bien los 4 temas antes de volver. 💪';
+  document.getElementById('score-msg').textContent = msg;
+}
+
+function restartQuiz() {
+  correctCount = 0; wrongCount = 0; answeredCount = 0;
+  answered.fill(false);
+  document.getElementById('correct-count').textContent = 0;
+  document.getElementById('wrong-count').textContent = 0;
+  document.getElementById('tried-count').textContent = 0;
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('problems-container').innerHTML = '';
+  document.getElementById('problems-container').style.display = 'block';
+  document.getElementById('final-score').style.display = 'none';
+  renderProblems();
+}
+</script>
+</body>
+</html>
